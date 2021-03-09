@@ -1,5 +1,7 @@
 package sample.controller;
 
+import javafx.application.Platform;
+import sample.dto.UserCredentialsDto;
 import sample.factory.PopupFactory;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -7,14 +9,16 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import sample.rest.Authenticator;
+import sample.rest.AuthenticatorImpl;
 
-import javax.swing.*;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class LoginController implements Initializable {
 
     private PopupFactory popupFactory;
+    private Authenticator authenticator;
 
     @FXML
     private AnchorPane loginAnchorPane;
@@ -31,8 +35,9 @@ public class LoginController implements Initializable {
     @FXML
     private TextField passwordTextField;
 
-    public LoginController(){
-         popupFactory = new PopupFactory();
+    public LoginController() {
+        popupFactory = new PopupFactory();
+        authenticator = new AuthenticatorImpl();
     }
 
     public void initialize(URL location, ResourceBundle resources) {
@@ -41,7 +46,7 @@ public class LoginController implements Initializable {
     }
 
     private void initializeLoginButton() {
-        loginButton.setOnAction((x) ->{
+        loginButton.setOnAction((x) -> {
             performAuthentication();
         });
     }
@@ -51,8 +56,15 @@ public class LoginController implements Initializable {
         waitingPopUp.show();
         String login = loginTextField.getText();
         String password = passwordTextField.getText();
-
-        System.out.println("login " + login + " password " + password);
+        UserCredentialsDto dto = new UserCredentialsDto();
+        dto.setLogin(login);
+        dto.setPassword(password);
+        authenticator.authenticate(dto, (authenticationResult) -> {
+            Platform.runLater(() -> {
+                waitingPopUp.close();
+                System.out.println(authenticationResult);
+            });
+        });
     }
 
     private void initializeExitButton() {
@@ -61,7 +73,7 @@ public class LoginController implements Initializable {
         });
     }
 
-    private Stage getStage(){
-        return (Stage)loginAnchorPane.getScene().getWindow();
+    private Stage getStage() {
+        return (Stage) loginAnchorPane.getScene().getWindow();
     }
 }
