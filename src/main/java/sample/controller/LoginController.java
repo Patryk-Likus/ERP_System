@@ -1,6 +1,9 @@
 package sample.controller;
 
 import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import sample.dto.OperatorCredentialsDto;
 import sample.factory.PopupFactory;
 import javafx.fxml.FXML;
@@ -12,11 +15,14 @@ import javafx.stage.Stage;
 import sample.rest.Authenticator;
 import sample.rest.AuthenticatorImpl;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class LoginController implements Initializable {
 
+    private static final String APP_FXML = "/app.fxml";
+    private static final String APP_TITLE = "ERP SYSTEM";
     private PopupFactory popupFactory;
     private Authenticator authenticator;
 
@@ -62,9 +68,35 @@ public class LoginController implements Initializable {
         authenticator.authenticate(dto, (authenticationResult) -> {
             Platform.runLater(() -> {
                 waitingPopUp.close();
-                System.out.println("auth: " + authenticationResult.isAuthenticated() + " + " + authenticationResult.toString());
+                if(authenticationResult.isAuthenticated()){
+                    openAppAndCloseLoginStage();
+                }
+                else{
+                    showIncorrectCredentialsMessage();
+                }
             });
         });
+    }
+
+    private void showIncorrectCredentialsMessage() {
+        //TODO
+        System.out.println("Incorrect credentials");
+    }
+
+    private void openAppAndCloseLoginStage(){
+        Stage appStage = new Stage();
+        Parent appRoot = null;
+
+        try {
+          appRoot = FXMLLoader.load(getClass().getResource(APP_FXML));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Scene scene = new Scene(appRoot, 1024, 768);
+        appStage.setTitle(APP_TITLE);
+        appStage.setScene(scene);
+        appStage.show();
+        getStage().close();
     }
 
     private void initializeExitButton() {
