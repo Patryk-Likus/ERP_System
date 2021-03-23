@@ -1,7 +1,7 @@
 package sample.controller;
 
 import javafx.application.Platform;
-import sample.dto.UserCredentialsDto;
+import sample.dto.OperatorCredentialsDto;
 import sample.factory.PopupFactory;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -56,13 +56,13 @@ public class LoginController implements Initializable {
         waitingPopUp.show();
         String login = loginTextField.getText();
         String password = passwordTextField.getText();
-        UserCredentialsDto dto = new UserCredentialsDto();
+        OperatorCredentialsDto dto = new OperatorCredentialsDto();
         dto.setLogin(login);
         dto.setPassword(password);
         authenticator.authenticate(dto, (authenticationResult) -> {
             Platform.runLater(() -> {
                 waitingPopUp.close();
-                System.out.println(authenticationResult);
+                System.out.println("auth: " + authenticationResult.isAuthenticated() + " + " + authenticationResult.toString());
             });
         });
     }
