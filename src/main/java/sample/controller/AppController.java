@@ -1,62 +1,89 @@
 package sample.controller;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
-import sample.dto.EmployeeDto;
-import sample.rest.EmployeeRestClient;
-import sample.table.EmployeeTableModel;
 
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.MenuItem;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import sample.Main;
+
+import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 public class AppController implements Initializable {
 
+    private final static String EMPLOYEE_MODULE_VIEW = "/fxml/employee.fxml";
+    private final static String WAREHOUSE_MODULE_VIEW = "/fxml/warehouse.fxml";
+    private final static String LOGIN_VIEW = "/fxml/login.fxml";
+
     @FXML
-    private TableView<EmployeeTableModel> EmployeeTableViev;
+    private Pane appPane;
 
-    private final EmployeeRestClient employeeRestClient;
+    @FXML
+    private BorderPane appBorderPane;
 
-    public AppController(){
-        employeeRestClient = new EmployeeRestClient();
-    }
+    @FXML
+    private MenuItem employeeModuleMenuItem;
+
+    @FXML
+    private MenuItem warehouseModuleMenuItem;
+
+    @FXML
+    private MenuItem logoutMenuItem;
+
+    @FXML
+    private MenuItem exitMenuItem;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        EmployeeTableViev.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-
-        TableColumn firstNameColumn = new TableColumn("First Name");
-        firstNameColumn.setMinWidth(100);
-        firstNameColumn.setCellValueFactory(new PropertyValueFactory<EmployeeTableModel, String>("firstName"));
-
-        TableColumn lastNameColumn = new TableColumn("Last Name");
-        lastNameColumn.setMinWidth(100);
-        lastNameColumn.setCellValueFactory(new PropertyValueFactory<EmployeeTableModel, String>("lastName"));
-
-        TableColumn salaryColumn = new TableColumn("Salary");
-        salaryColumn.setMinWidth(100);
-        salaryColumn.setCellValueFactory(new PropertyValueFactory<EmployeeTableModel, String>("salary"));
-
-        EmployeeTableViev.getColumns().addAll(firstNameColumn, lastNameColumn, salaryColumn);
-
-        ObservableList<EmployeeTableModel> data = FXCollections.observableArrayList();
-
-        loadEmployeeData(data);
-
-        EmployeeTableViev.setItems(data);
+        loadDefaultView();
+        initializeMenuItems();
     }
 
-    private void loadEmployeeData(ObservableList<EmployeeTableModel> data) {
-        Thread thread = new Thread(() ->{
-            List<EmployeeDto> employees = employeeRestClient.getEmployees();
-            data.addAll(employees.stream().map(EmployeeTableModel::of).collect(Collectors.toList()));
-        });
-        thread.start();
+    private void initializeMenuItems() {
+        warehouseModuleMenuItem.setOnAction(x -> loadModuleView(WAREHOUSE_MODULE_VIEW));
+        employeeModuleMenuItem.setOnAction(x -> loadModuleView(EMPLOYEE_MODULE_VIEW));
+        logoutMenuItem.setOnAction(x -> logout());
+        exitMenuItem.setOnAction(x -> getStage().close());
+    }
+
+    private void logout() {
+
+        try {
+            Stage stage = new Stage();
+            Parent root = FXMLLoader.load(getClass().getResource(LOGIN_VIEW));
+            stage.initStyle(StageStyle.UNDECORATED);
+            stage.setScene(new Scene(root, Main.WIDTH, Main.HEIGHT));
+            stage.show();
+            getStage().close();
+        } catch (IOException e) {
+            throw new RuntimeException("Can't load fxml file: " + LOGIN_VIEW);
+        }
+    }
+
+    private void loadDefaultView() {
+       loadModuleView(EMPLOYEE_MODULE_VIEW);
+    }
+
+    private void loadModuleView(String viewPath){
+        appPane.getChildren().clear();
+        try {
+            BorderPane borderPane = FXMLLoader.load(getClass().getResource(viewPath));
+            appPane.getChildren().add(borderPane);
+        } catch (IOException e) {
+            throw new RuntimeException("Can't load fxml file: " + viewPath);
+        }
+    }
+
+
+    private Stage getStage(){
+        return (Stage) appBorderPane.getScene().getWindow();
     }
 }

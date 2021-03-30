@@ -1,17 +1,18 @@
 package sample.controller;
 
 import javafx.application.Platform;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import sample.dto.OperatorCredentialsDto;
-import sample.factory.PopupFactory;
-import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import sample.dto.OperatorCredentialsDto;
+import sample.factory.PopupFactory;
 import sample.rest.Authenticator;
 import sample.rest.AuthenticatorImpl;
 
@@ -21,30 +22,28 @@ import java.util.ResourceBundle;
 
 public class LoginController implements Initializable {
 
-    private static final String APP_FXML = "/app.fxml";
-    private static final String APP_TITLE = "ERP SYSTEM";
+    private static final String APP_FXML = "/fxml/app.fxml";
+    private static final String APP_TITLE = "ERP System";
+
     private PopupFactory popupFactory;
     private Authenticator authenticator;
 
     @FXML
-    private AnchorPane loginAnchorPane;
-
-    @FXML
     private Button exitButton;
-
     @FXML
     private Button loginButton;
-
+    @FXML
+    private AnchorPane loginAnchorPane;
     @FXML
     private TextField loginTextField;
-
     @FXML
-    private TextField passwordTextField;
+    private PasswordField passwordTextField;
 
-    public LoginController() {
+    public LoginController(){
         popupFactory = new PopupFactory();
         authenticator = new AuthenticatorImpl();
     }
+
 
     public void initialize(URL location, ResourceBundle resources) {
         initializeExitButton();
@@ -53,25 +52,24 @@ public class LoginController implements Initializable {
 
     private void initializeLoginButton() {
         loginButton.setOnAction((x) -> {
-            performAuthentication();
+           performAuthentication();
         });
     }
 
     private void performAuthentication() {
-        Stage waitingPopUp = popupFactory.createWaitingPopUp("Connecting to the server...");
-        waitingPopUp.show();
+        Stage waitingPopup = popupFactory.createWaitingPopup("Connecting to the server...");
+        waitingPopup.show();
         String login = loginTextField.getText();
         String password = passwordTextField.getText();
         OperatorCredentialsDto dto = new OperatorCredentialsDto();
         dto.setLogin(login);
         dto.setPassword(password);
         authenticator.authenticate(dto, (authenticationResult) -> {
-            Platform.runLater(() -> {
-                waitingPopUp.close();
+            Platform.runLater(() ->{
+                waitingPopup.close();
                 if(authenticationResult.isAuthenticated()){
                     openAppAndCloseLoginStage();
-                }
-                else{
+                } else{
                     showIncorrectCredentialsMessage();
                 }
             });
@@ -83,16 +81,15 @@ public class LoginController implements Initializable {
         System.out.println("Incorrect credentials");
     }
 
-    private void openAppAndCloseLoginStage(){
+    private void openAppAndCloseLoginStage() {
         Stage appStage = new Stage();
         Parent appRoot = null;
-
         try {
-          appRoot = FXMLLoader.load(getClass().getResource(APP_FXML));
+            appRoot = FXMLLoader.load(getClass().getResource(APP_FXML));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Scene scene = new Scene(appRoot, 1024, 768);
+        Scene scene = new Scene(appRoot,1024,768);
         appStage.setTitle(APP_TITLE);
         appStage.setScene(scene);
         appStage.show();
@@ -101,11 +98,12 @@ public class LoginController implements Initializable {
 
     private void initializeExitButton() {
         exitButton.setOnAction((x) -> {
-            getStage().close();
+           getStage().close();
         });
     }
 
-    private Stage getStage() {
+    private Stage getStage(){
         return (Stage) loginAnchorPane.getScene().getWindow();
     }
+
 }
